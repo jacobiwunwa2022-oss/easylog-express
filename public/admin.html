@@ -1,0 +1,29 @@
+<h2>Create Shipment</h2>
+
+<input id="sender" placeholder="Sender">
+<input id="receiver" placeholder="Receiver">
+<input id="origin" placeholder="Origin">
+<input id="destination" placeholder="Destination">
+
+<button onclick="create()">Generate Tracking</button>
+
+<p id="output"></p>
+
+<script>
+async function create() {
+  const res = await fetch("/create-shipment", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      sender: sender.value,
+      receiver: receiver.value,
+      origin: origin.value,
+      destination: destination.value
+    })
+  });
+
+  const data = await res.json();
+  document.getElementById("output").innerText =
+    "Tracking Number: " + data.tracking;
+}
+      </script>
