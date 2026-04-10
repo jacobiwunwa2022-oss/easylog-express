@@ -1,18 +1,18 @@
-<h2>Track Your Shipment</h2>
+<div class="header">Track Your Shipment</div>
 
-<input id="trackId" placeholder="Enter Tracking Number">
-<button onclick="track()">Track</button>
+<div class="container">
+  <div class="card">
+    <input id="t" placeholder="Enter Tracking Number">
+    <button onclick="track()">Track</button>
 
-<pre id="result"></pre>
+    <pre id="out"></pre>
+  </div>
+</div>
 
 <script>
 async function track() {
-  const id = document.getElementById("trackId").value;
-
-  const res = await fetch("/track/" + id);
+  const res = await fetch("/api/track/" + t.value);
   const data = await res.json();
-
-  document.getElementById("result").innerText =
-    JSON.stringify(data, null, 2);
+  out.innerText = JSON.stringify(data, null, 2);
 }
 </script>
