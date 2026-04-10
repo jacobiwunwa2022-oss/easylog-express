@@ -1,4 +1,10 @@
-<!DOCTYPE html>
+<div class="box">
+<h2>Login</h2>
+<input id="username" placeholder="Username">
+<input id="password" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+<p id="loginStatus"></p>
+</div><!DOCTYPE html>
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -111,7 +117,24 @@ async function trackShipment(){
   document.getElementById('trackResult').innerText =
     JSON.stringify(data, null, 2);
 }
-</script>
+</script>async function login(){
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
+
+  const res = await fetch('/login', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ username, password })
+  });
+
+  const data = await res.json();
+
+  if(data.success){
+    document.getElementById('loginStatus').innerText = "Login successful";
+  } else {
+    document.getElementById('loginStatus').innerText = "Login failed";
+  }
+}
 
 </body>
 </html>
