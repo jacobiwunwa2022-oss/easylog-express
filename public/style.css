@@ -1,0 +1,14 @@
+body {
+  font-family: Arial;
+  text-align: center;
+  background: #0b1f3a;
+  color: white;
+  padding: 40px;
+}
+
+a {
+  display: block;
+  margin: 10px;
+  color: #00d4ff;
+  font-size: 18px;
+}
