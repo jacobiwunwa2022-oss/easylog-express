@@ -1,41 +1,32 @@
 const express = require("express");
-const cors = require("cors");
 const path = require("path");
 
 const app = express();
-app.use(cors());
+
 app.use(express.json());
 app.use(express.static("public"));
 
-// Fake database (in-memory)
+// REAL DATABASE (temporary memory storage)
 let shipments = {};
 
-// Generate tracking number
-function generateTracking() {
-  return "ELX" + Math.floor(100000000 + Math.random() * 900000000);
-}
-
 // CREATE SHIPMENT
-app.post("/create-shipment", (req, res) => {
-  const tracking = generateTracking();
+app.post("/api/create", (req, res) => {
+  const tracking = "ELX" + Math.floor(100000000 + Math.random() * 900000000);
 
-  const shipment = {
+  shipments[tracking] = {
     tracking,
     sender: req.body.sender,
     receiver: req.body.receiver,
     origin: req.body.origin,
     destination: req.body.destination,
-    status: "Processing",
-    created: new Date()
+    status: "Processing"
   };
-
-  shipments[tracking] = shipment;
 
   res.json({ success: true, tracking });
 });
 
 // TRACK SHIPMENT
-app.get("/track/:id", (req, res) => {
+app.get("/api/track/:id", (req, res) => {
   const data = shipments[req.params.id];
 
   if (!data) {
@@ -45,6 +36,21 @@ app.get("/track/:id", (req, res) => {
   res.json({ success: true, shipment: data });
 });
 
-// START SERVER
+// ADMIN UPDATE STATUS
+app.post("/api/update/:id", (req, res) => {
+  const shipment = shipments[req.params.id];
+
+  if (!shipment) {
+    return res.json({ success: false });
+  }
+
+  shipment.status = req.body.status;
+
+  res.json({ success: true, shipment });
+});
+
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log("EasyLog Express running on port " + PORT));
+
+app.listen(PORT, () => {
+  console.log("EasyLog upgraded running");
+});
