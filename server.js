@@ -1,3 +1,15 @@
+let users = {
+  admin: { password: "1234", role: "admin" }
+};
+app.post('/login', (req, res) => {
+  const { username, password } = req.body;
+
+  if (users[username] && users[username].password === password) {
+    res.json({ success: true, role: users[username].role });
+  } else {
+    res.json({ success: false });
+  }
+});
 const express = require('express');
 const app = express();
 
