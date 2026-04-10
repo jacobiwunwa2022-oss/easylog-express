@@ -1,0 +1,18 @@
+<h2>Track Your Shipment</h2>
+
+<input id="trackId" placeholder="Enter Tracking Number">
+<button onclick="track()">Track</button>
+
+<pre id="result"></pre>
+
+<script>
+async function track() {
+  const id = document.getElementById("trackId").value;
+
+  const res = await fetch("/track/" + id);
+  const data = await res.json();
+
+  document.getElementById("result").innerText =
+    JSON.stringify(data, null, 2);
+}
+</script>
