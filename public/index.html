@@ -1,162 +1,16 @@
-<div class="box">
-<h2>Login</h2>
-<input id="username" placeholder="Username">
-<input id="password" type="password" placeholder="Password">
-<button onclick="login()">Login</button>
-<p id="loginStatus"></p>
-</div><!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EasyLog Express</title>
-
-<style>
-body {
-  font-family: Arial;
-  margin:0;
-  background:#f4f4f4;
-}
-
-header {
-  background:#d40511;
-  color:white;
-  padding:15px;
-  text-align:center;
-}
-
-.container {
-  padding:15px;
-}
-
-.box {
-  background:white;
-  padding:15px;
-  margin-bottom:15px;
-  border-radius:10px;
-}
-
-input, button {
-  padding:10px;
-  width:100%;
-  margin:5px 0;
-}
-
-button {
-  background:#d40511;
-  color:white;
-  border:none;
-}
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-<header>
-<h1>EasyLog Express</h1>
-<p>International Delivery Services - London</p>
-</header>
+<h1>🚚 EasyLog Express</h1>
+<p>International Shipping & Logistics</p>
 
-<div class="container">
-
-<div class="box">
-<h2>Create Shipment</h2>
-<input id="sender" placeholder="Sender Name">
-<input id="receiver" placeholder="Receiver Name">
-<button onclick="createShipment()">Generate Tracking</button>
-<p id="trackingResult"></p>
-</div>
-
-<div class="box">
-<h2>Track Shipment</h2>
-<input id="trackInput" placeholder="Enter Tracking Number">
-<button onclick="trackShipment()">Track</button>
-<pre id="trackResult"></pre>
-</div>
-
-</div>
-
-<script>async function updateShipment(){
-  const tracking = document.getElementById('adminTrack').value;
-  const status = document.getElementById('status').value;
-  const location = document.getElementById('location').value;
-
-  await fetch('/update', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ tracking, status, location })
-  });
-
-  alert("Shipment Updated");
-}
-
-function viewReceipt(){
-  const id = document.getElementById('receiptInput').value;
-  window.open('/receipt/' + id);
-}
-async function createShipment(){
-  const sender = document.getElementById('sender').value;
-  const receiver = document.getElementById('receiver').value;
-
-  const res = await fetch('/create', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ sender, receiver })
-  });
-
-  const data = await res.json();
-  document.getElementById('trackingResult').innerText =
-    "Tracking Number: " + data.tracking;
-}
-
-async function trackShipment(){
-  const id = document.getElementById('trackInput').value;
-
-  const res = await fetch('/track/' + id);
-  const data = await res.json();
-
-  document.getElementById('trackResult').innerText =
-    JSON.stringify(data, null, 2);
-}
-</script>async function login(){
-  const username = document.getElementById('username').value;
-  const password = document.getElementById('password').value;
-
-  const res = await fetch('/login', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ username, password })
-  });
-
-  const data = await res.json();
-
-  if(data.success){
-    document.getElementById('loginStatus').innerText = "Login successful";
-  } else {
-    document.getElementById('loginStatus').innerText = "Login failed";
-  }
-}
+<a href="track.html">Track Shipment</a>
+<a href="admin.html">Create Shipment</a>
 
 </body>
 </html>
-<div class="box">
-<h2>Admin Panel</h2>
-<input id="adminTrack" placeholder="Tracking Number">
-<input id="status" placeholder="New Status">
-<input id="location" placeholder="Current Location">
-<button onclick="updateShipment()">Update Shipment</button>
-</div>
-
-<div class="box">
-<h2>Receipt</h2>
-<input id="receiptInput" placeholder="Enter Receipt ID">
-<button onclick="viewReceipt()">View Receipt</button>
-</div>
-
-<div class="box">
-<h2>Live Map</h2>
-<iframe 
-  width="100%" 
-  height="300" 
-  src="https://maps.google.com/maps?q=London&t=&z=5&ie=UTF8&iwloc=&output=embed">
-</iframe>
-</div>
