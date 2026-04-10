@@ -98,3 +98,25 @@ async function trackShipment(){
 
 </body>
 </html>
+<div class="box">
+<h2>Admin Panel</h2>
+<input id="adminTrack" placeholder="Tracking Number">
+<input id="status" placeholder="New Status">
+<input id="location" placeholder="Current Location">
+<button onclick="updateShipment()">Update Shipment</button>
+</div>
+
+<div class="box">
+<h2>Receipt</h2>
+<input id="receiptInput" placeholder="Enter Receipt ID">
+<button onclick="viewReceipt()">View Receipt</button>
+</div>
+
+<div class="box">
+<h2>Live Map</h2>
+<iframe 
+  width="100%" 
+  height="300" 
+  src="https://maps.google.com/maps?q=London&t=&z=5&ie=UTF8&iwloc=&output=embed">
+</iframe>
+</div>
