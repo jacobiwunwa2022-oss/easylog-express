@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EasyLog Express</title>
+
+<style>
+body {
+  font-family: Arial;
+  margin:0;
+  background:#f4f4f4;
+}
+
+header {
+  background:#d40511;
+  color:white;
+  padding:15px;
+  text-align:center;
+}
+
+.container {
+  padding:15px;
+}
+
+.box {
+  background:white;
+  padding:15px;
+  margin-bottom:15px;
+  border-radius:10px;
+}
+
+input, button {
+  padding:10px;
+  width:100%;
+  margin:5px 0;
+}
+
+button {
+  background:#d40511;
+  color:white;
+  border:none;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>EasyLog Express</h1>
+<p>International Delivery Services - London</p>
+</header>
+
+<div class="container">
+
+<div class="box">
+<h2>Create Shipment</h2>
+<input id="sender" placeholder="Sender Name">
+<input id="receiver" placeholder="Receiver Name">
+<button onclick="createShipment()">Generate Tracking</button>
+<p id="trackingResult"></p>
+</div>
+
+<div class="box">
+<h2>Track Shipment</h2>
+<input id="trackInput" placeholder="Enter Tracking Number">
+<button onclick="trackShipment()">Track</button>
+<pre id="trackResult"></pre>
+</div>
+
+</div>
+
+<script>
+async function createShipment(){
+  const sender = document.getElementById('sender').value;
+  const receiver = document.getElementById('receiver').value;
+
+  const res = await fetch('/create', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ sender, receiver })
+  });
+
+  const data = await res.json();
+  document.getElementById('trackingResult').innerText =
+    "Tracking Number: " + data.tracking;
+}
+
+async function trackShipment(){
+  const id = document.getElementById('trackInput').value;
+
+  const res = await fetch('/track/' + id);
+  const data = await res.json();
+
+  document.getElementById('trackResult').innerText =
+    JSON.stringify(data, null, 2);
+}
+</script>
+
+</body>
+</html>
