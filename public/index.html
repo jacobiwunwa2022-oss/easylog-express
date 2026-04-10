@@ -69,7 +69,24 @@ button {
 
 </div>
 
-<script>
+<script>async function updateShipment(){
+  const tracking = document.getElementById('adminTrack').value;
+  const status = document.getElementById('status').value;
+  const location = document.getElementById('location').value;
+
+  await fetch('/update', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ tracking, status, location })
+  });
+
+  alert("Shipment Updated");
+}
+
+function viewReceipt(){
+  const id = document.getElementById('receiptInput').value;
+  window.open('/receipt/' + id);
+}
 async function createShipment(){
   const sender = document.getElementById('sender').value;
   const receiver = document.getElementById('receiver').value;
