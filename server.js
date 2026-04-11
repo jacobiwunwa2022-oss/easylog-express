@@ -1,81 +1,78 @@
 const express = require("express");
-const path = require("path");
+const cors = require("cors");
+const PDFDocument = require("pdfkit");
 
 const app = express();
-
+app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
 
-// REAL DATABASE (temporary memory storage)
 let shipments = {};
 
 // CREATE SHIPMENT
-app.post("/api/create", (req, res) => {
-  const tracking = "ELX" + Math.floor(100000000 + Math.random() * 900000000);
+app.post("/shipment/create", (req, res) => {
+  const id = "ELX-" + Date.now();
 
-  shipments[tracking] = {
-  tracking,
-  sender: req.body.sender,
-  receiver: req.body.receiver,
-  origin: req.body.origin,
-  destination: req.body.destination,
-  status: "Processing",
-  history: [
-    {
-      location: req.body.origin,
-      status: "Shipment created",
-      date: new Date().toLocaleString()
-    }
-  ]
-};
+  shipments[id] = {
+    ...req.body,
+    status: "Pending",
+    history: [{ status: "Pending", time: new Date() }]
+  };
 
-  res.json({ success: true, tracking });
+  res.json({ trackingId: id });
 });
 
 // TRACK SHIPMENT
-app.get("/api/track/:id", (req, res) => {
-  const data = shipments[req.params.id];
-
-  if (!data) {
-    return res.json({ success: false, message: "Tracking not found" });
-  }
-
-  res.json({ success: true, shipment: data });
+app.get("/shipment/:id", (req, res) => {
+  const shipment = shipments[req.params.id];
+  if (!shipment) return res.json({ message: "Not found" });
+  res.json(shipment);
 });
 
-// ADMIN UPDATE STATUS
-app.post("/api/update/:id", (req, res) => {
+// UPDATE STATUS (ADMIN)
+app.post("/admin/update/:id", (req, res) => {
   const shipment = shipments[req.params.id];
-
-  if (!shipment) {
-    return res.json({ success: false });
-  }
+  if (!shipment) return res.json({ message: "Not found" });
 
   shipment.status = req.body.status;
-
-  res.json({ success: true, shipment });
-});
-
-const PORT = process.env.PORT || 3000;
-app.post('/api/update', (req, res) => {
-  const { tracking, status, location } = req.body;
-
-  const shipment = shipments[tracking];
-
-  if (!shipment) {
-    return res.json({ success: false });
-  }
-
-  shipment.status = status;
-
   shipment.history.push({
-    location,
-    status,
-    date: new Date().toLocaleString()
+    status: req.body.status,
+    time: new Date()
   });
 
-  res.json({ success: true });
+  res.json({ message: "Updated" });
 });
-app.listen(PORT, () => {
-  console.log("EasyLog upgraded running");
+
+// ADMIN LOGIN
+app.post("/admin/login", (req, res) => {
+  if (req.body.username === "admin" && req.body.password === "1234") {
+    res.json({ success: true });
+  } else {
+    res.json({ success: false });
+  }
+});
+
+// RECEIPT PDF
+app.get("/receipt/:id", (req, res) => {
+  const shipment = shipments[req.params.id];
+  if (!shipment) return res.send("Not found");
+
+  const doc = new PDFDocument();
+  res.setHeader("Content-Type", "application/pdf");
+
+  doc.pipe(res);
+
+  doc.fontSize(20).text("EasyLog Express Receipt");
+  doc.moveDown();
+  doc.text(`Tracking ID: ${req.params.id}`);
+  doc.text(`Sender: ${shipment.sender}`);
+  doc.text(`Receiver: ${shipment.receiver}`);
+  doc.text(`Status: ${shipment.status}`);
+
+  doc.end();
+});
+
+// START SERVER
+app.listen(3000, () => {
+  console.log("Server running on port 3000");
 });
