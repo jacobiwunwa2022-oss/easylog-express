@@ -1,11 +1,14 @@
 {
-  "name": "your-project",
+  "name": "easylog-express",
   "version": "1.0.0",
+  "description": "Professional Delivery System",
   "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
   "dependencies": {
     "express": "^4.18.2",
-    "mongoose": "^8.0.0",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5"
+    "pdfkit": "^0.13.0"
   }
 }
