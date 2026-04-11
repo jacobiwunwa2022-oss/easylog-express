@@ -118,7 +118,7 @@
 async function track() {
   const number = document.getElementById('trackingNumber').value;
 
-  const res = await fetch('/track/' + number);
+  const res = await fetch('/api/track/' + number);
   const data = await res.json();
 
   if (data.error) {
