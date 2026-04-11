@@ -50,7 +50,25 @@ app.post("/api/update/:id", (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
+app.post('/api/update', (req, res) => {
+  const { tracking, status, location } = req.body;
 
+  const shipment = shipments[tracking];
+
+  if (!shipment) {
+    return res.json({ success: false });
+  }
+
+  shipment.status = status;
+
+  shipment.history.push({
+    location,
+    status,
+    date: new Date().toLocaleString()
+  });
+
+  res.json({ success: true });
+});
 app.listen(PORT, () => {
   console.log("EasyLog upgraded running");
 });
