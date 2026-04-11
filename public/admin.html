@@ -1,37 +1,39 @@
-<!DOCTYPE html>
-<html>
-<body>
+<h1>Admin Panel</h1>
 
-<h2>Update Shipment</h2>
+<input id="username" placeholder="Username">
+<input id="password" placeholder="Password">
+<button onclick="login()">Login</button>
 
-<input id="tracking" placeholder="Tracking Number"><br><br>
-<input id="status" placeholder="Status"><br><br>
-<input id="location" placeholder="Location"><br><br>
-
-<button onclick="update()">Update</button>
-
-<p id="msg"></p>
+<div id="adminArea" style="display:none;">
+  <h2>Update Shipment</h2>
+  <input id="id" placeholder="Tracking ID">
+  <input id="status" placeholder="New Status">
+  <button onclick="update()">Update</button>
+</div>
 
 <script>
-async function update() {
-  const tracking = document.getElementById('tracking').value;
-  const status = document.getElementById('status').value;
-  const location = document.getElementById('location').value;
-
-  const res = await fetch('/api/update', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ tracking, status, location })
+function login() {
+  fetch("/admin/login", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({
+      username: username.value,
+      password: password.value
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      adminArea.style.display = "block";
+    }
   });
+}
 
-  const data = await res.json();
-
-  document.getElementById('msg').innerText =
-    data.success ? "Updated" : "Error";
+function update() {
+  fetch(`/admin/update/${id.value}`, {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ status: status.value })
+  });
 }
 </script>
-
-</body>
-</html>
