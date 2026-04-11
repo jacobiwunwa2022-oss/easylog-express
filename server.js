@@ -1,95 +1,111 @@
 const express = require("express");
 const cors = require("cors");
-const fs = require("fs");
 const PDFDocument = require("pdfkit");
+const { createClient } = require("@supabase/supabase-js");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const DATA_FILE = "data.json";
+// SUPABASE CONNECTION
+const supabase = createClient(
+  "https://zssdeapmesedzilrueoh.supabase.co",
+  "sb_publishable_0vfHP85fYWtABokdLdMixw_whCKG0UR"
+);
 
-// LOAD DATA
-let shipments = {};
-if (fs.existsSync(DATA_FILE)) {
-  shipments = JSON.parse(fs.readFileSync(DATA_FILE));
-}
-
-// SAVE DATA
-function saveData() {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(shipments, null, 2));
-}
-
-// HOME
+// HOME PAGE (DHL STYLE)
 app.get("/", (req, res) => {
   res.send(`
-    <style>
-      body { font-family: Arial; text-align:center; }
-      h1 { background:#ffcc00; padding:10px; }
-      input,button { padding:10px; margin:5px; }
-    </style>
+  <style>
+    body { margin:0; font-family:Arial; }
+    header { background:#ffcc00; padding:15px; font-weight:bold; }
+    .hero { background:black; color:white; padding:40px; text-align:center; }
+    input,button { padding:12px; margin:5px; width:200px; }
+    button { background:#ffcc00; border:none; font-weight:bold; }
+  </style>
 
-    <h1>EasyLog Express</h1>
+  <header>EasyLog Express</header>
 
-    <h2>Create Shipment</h2>
+  <div class="hero">
+    <h1>Fast & Reliable Delivery</h1>
+
     <input id="sender" placeholder="Sender">
-    <input id="receiver" placeholder="Receiver">
-    <button onclick="create()">Create</button>
+    <input id="receiver" placeholder="Receiver"><br>
 
-    <p id="result"></p>
+    <button onclick="pay()">Pay & Create Shipment</button><br><br>
 
-    <h2>Track Shipment</h2>
     <input id="trackId" placeholder="Tracking ID">
     <button onclick="track()">Track</button>
+  </div>
 
-    <script>
-      function create() {
-        fetch('/create', {
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({
-            sender: sender.value,
-            receiver: receiver.value
-          })
-        })
-        .then(res=>res.json())
-        .then(data=>{
-          result.innerHTML = "Tracking ID: " + data.id;
-        });
-      }
+  <script src="https://js.paystack.co/v1/inline.js"></script>
 
-      function track() {
-        window.location = "/track/" + trackId.value;
+  <script>
+  function pay() {
+    let handler = PaystackPop.setup({
+      key: 'pk_test_xxxxxxxx', // replace later
+      email: "customer@email.com",
+      amount: 500000,
+      callback: function(response) {
+        createShipment();
       }
-    </script>
+    });
+    handler.openIframe();
+  }
+
+  function createShipment() {
+    fetch('/create', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        sender: sender.value,
+        receiver: receiver.value
+      })
+    })
+    .then(res=>res.json())
+    .then(data=>{
+      alert("Tracking ID: " + data.id);
+    });
+  }
+
+  function track() {
+    window.location = "/track/" + trackId.value;
+  }
+  </script>
   `);
 });
 
-// CREATE
-app.post("/create", (req, res) => {
+
+// CREATE SHIPMENT
+app.post("/create", async (req, res) => {
   const id = "ELX-" + Date.now();
 
-  shipments[id] = {
+  await supabase.from("shipments").insert([{
+    tracking_id: id,
     sender: req.body.sender,
     receiver: req.body.receiver,
     status: "Pending",
-    location: { lat: 6.5244, lng: 3.3792 },
-    history: [{ status: "Pending", time: new Date() }]
-  };
-
-  saveData();
+    lat: 6.5244,
+    lng: 3.3792
+  }]);
 
   res.json({ id });
 });
 
-// TRACK PAGE
-app.get("/track/:id", (req, res) => {
-  const s = shipments[req.params.id];
-  if (!s) return res.send("Not found");
+
+// TRACK PAGE WITH MAP
+app.get("/track/:id", async (req, res) => {
+  const { data } = await supabase
+    .from("shipments")
+    .select("*")
+    .eq("tracking_id", req.params.id)
+    .single();
+
+  if (!data) return res.send("Not found");
 
   res.send(`
-    <h1>Tracking ${req.params.id}</h1>
-    <h2>Status: ${s.status}</h2>
+    <h1>${data.tracking_id}</h1>
+    <h2>Status: ${data.status}</h2>
 
     <div id="map" style="height:300px;"></div>
 
@@ -97,89 +113,57 @@ app.get("/track/:id", (req, res) => {
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
     <script>
-      var map = L.map('map').setView([${s.location.lat}, ${s.location.lng}], 6);
+      var map = L.map('map').setView([${data.lat}, ${data.lng}], 6);
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
         .addTo(map);
 
-      L.marker([${s.location.lat}, ${s.location.lng}])
+      L.marker([${data.lat}, ${data.lng}])
         .addTo(map)
         .bindPopup("Package Location")
         .openPopup();
     </script>
 
     <br>
-    <a href="/receipt/${req.params.id}">Download Receipt</a>
+    <a href="/receipt/${data.tracking_id}">Download Receipt</a>
   `);
 });
 
-// ADMIN
-app.get("/admin", (req, res) => {
-  res.send(`
-    <h1>Admin Panel</h1>
 
-    <input id="id" placeholder="Tracking ID">
-    <input id="status" placeholder="Status">
-    <input id="lat" placeholder="Latitude">
-    <input id="lng" placeholder="Longitude">
-
-    <button onclick="update()">Update</button>
-
-    <script>
-      function update() {
-        fetch('/update/' + id.value, {
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({
-            status: status.value,
-            lat: lat.value,
-            lng: lng.value
-          })
-        })
-      }
-    </script>
-  `);
-});
-
-// UPDATE
-app.post("/update/:id", (req, res) => {
-  const s = shipments[req.params.id];
-  if (!s) return res.send("Not found");
-
-  s.status = req.body.status;
-
-  if (req.body.lat && req.body.lng) {
-    s.location = {
+// ADMIN UPDATE
+app.post("/update/:id", async (req, res) => {
+  await supabase
+    .from("shipments")
+    .update({
+      status: req.body.status,
       lat: req.body.lat,
       lng: req.body.lng
-    };
-  }
-
-  s.history.push({
-    status: req.body.status,
-    time: new Date()
-  });
-
-  saveData();
+    })
+    .eq("tracking_id", req.params.id);
 
   res.send("Updated");
 });
 
+
 // RECEIPT
-app.get("/receipt/:id", (req, res) => {
-  const s = shipments[req.params.id];
-  if (!s) return res.send("Not found");
+app.get("/receipt/:id", async (req, res) => {
+  const { data } = await supabase
+    .from("shipments")
+    .select("*")
+    .eq("tracking_id", req.params.id)
+    .single();
 
   const doc = new PDFDocument();
   res.setHeader("Content-Type", "application/pdf");
 
   doc.pipe(res);
   doc.fontSize(20).text("EasyLog Express");
-  doc.text("Tracking ID: " + req.params.id);
-  doc.text("Sender: " + s.sender);
-  doc.text("Receiver: " + s.receiver);
-  doc.text("Status: " + s.status);
+  doc.text("Tracking ID: " + data.tracking_id);
+  doc.text("Sender: " + data.sender);
+  doc.text("Receiver: " + data.receiver);
+  doc.text("Status: " + data.status);
   doc.end();
 });
+
 
 app.listen(3000, () => console.log("Running..."));
