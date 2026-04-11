@@ -149,11 +149,28 @@ app.post("/create", (req, res) => {
 // TRACK
 app.get("/track/:id", (req, res) => {
   const s = shipments[req.params.id];
-  if (!s) return res.send("Not found");
+  if (!s) return res.send("Shipment not found");
 
   res.send(`
-    <h1>Tracking ${req.params.id}</h1>
-    <h2>Status: ${s.status}</h2>
+  <h1>Tracking: ${req.params.id}</h1>
+  <h2>Status: ${s.status}</h2>
+
+  <div id="map" style="height:300px;"></div>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <script>
+    var map = L.map('map').setView([6.5244, 3.3792], 6);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
+      .addTo(map);
+
+    L.marker([6.5244, 3.3792])
+      .addTo(map)
+      .bindPopup("Package Location")
+      .openPopup();
+  </script>
   `);
 });
 
