@@ -1,18 +1,43 @@
-<div class="header">Track Your Shipment</div>
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+</head>
+<body>
 
-<div class="container">
-  <div class="card">
-    <input id="t" placeholder="Enter Tracking Number">
-    <button onclick="track()">Track</button>
+<h1>Track Shipment</h1>
 
-    <pre id="out"></pre>
-  </div>
-</div>
+<input id="id" placeholder="Tracking ID">
+<button onclick="track()">Track</button>
+
+<div id="output"></div>
+
+<div id="map" style="height:300px;"></div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
-async function track() {
-  const res = await fetch("/api/track/" + t.value);
-  const data = await res.json();
-  out.innerText = JSON.stringify(data, null, 2);
+function track() {
+  const id = document.getElementById("id").value;
+
+  fetch(`/shipment/${id}`)
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("output").innerHTML =
+        "Status: " + data.status;
+
+      var map = L.map('map').setView([6.5244, 3.3792], 5);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
+        .addTo(map);
+
+      L.marker([6.5244, 3.3792])
+        .addTo(map)
+        .bindPopup("Package Location");
+    });
 }
 </script>
+
+</body>
+</html>
