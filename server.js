@@ -14,13 +14,20 @@ app.post("/api/create", (req, res) => {
   const tracking = "ELX" + Math.floor(100000000 + Math.random() * 900000000);
 
   shipments[tracking] = {
-    tracking,
-    sender: req.body.sender,
-    receiver: req.body.receiver,
-    origin: req.body.origin,
-    destination: req.body.destination,
-    status: "Processing"
-  };
+  tracking,
+  sender: req.body.sender,
+  receiver: req.body.receiver,
+  origin: req.body.origin,
+  destination: req.body.destination,
+  status: "Processing",
+  history: [
+    {
+      location: req.body.origin,
+      status: "Shipment created",
+      date: new Date().toLocaleString()
+    }
+  ]
+};
 
   res.json({ success: true, tracking });
 });
