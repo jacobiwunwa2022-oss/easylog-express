@@ -9,8 +9,30 @@ app.use(express.json());
 let shipments = {};
 
 // HOME PAGE
-app.get( app.get("/", (req, res) => {
+app.get("/", (req, res) => {
   res.send(`
+    <h1>EasyLog Express</h1>
+
+    <input id="sender" placeholder="Sender">
+    <input id="receiver" placeholder="Receiver">
+    <button onclick="create()">Create</button>
+
+    <script>
+      function create() {
+        fetch('/create', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({
+            sender: sender.value,
+            receiver: receiver.value
+          })
+        })
+        .then(res => res.json())
+        .then(data => alert(data.id));
+      }
+    </script>
+  `);
+});
   <style>
     body { margin:0; font-family:Arial; background:#f5f5f5; }
 
