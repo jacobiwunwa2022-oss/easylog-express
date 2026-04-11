@@ -121,12 +121,30 @@ async function track() {
   const res = await fetch('/api/track/' + number);
   const data = await res.json();
 
-  if (data.error) {
-    document.getElementById('result').innerText = "Tracking number not found";
-  } else {
-    document.getElementById('result').innerText =
-      "Status: " + data.status;
+  if (!data.success) {
+    document.getElementById('result').innerHTML = "Tracking number not found";
+    return;
   }
+
+  let html = `
+    <h3>Tracking Details</h3>
+    <p><b>Status:</b> ${data.status}</p>
+    <p><b>From:</b> ${data.origin}</p>
+    <p><b>To:</b> ${data.destination}</p>
+    <h4>History</h4>
+  `;
+
+  data.history.reverse().forEach(item => {
+    html += `
+      <div style="background:#eee; padding:10px; margin:5px; border-radius:5px;">
+        <b>${item.status}</b><br>
+        ${item.location}<br>
+        <small>${item.date}</small>
+      </div>
+    `;
+  });
+
+  document.getElementById('result').innerHTML = html;
 }
 </script>
 
