@@ -1,156 +1,28 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>EasyLog Express</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial;
-      background: #f5f5f5;
-    }
-
-    header {
-      background: #ffcc00;
-      padding: 15px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    header h1 {
-      margin: 0;
-    }
-
-    .hero {
-      background: url('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d');
-      background-size: cover;
-      color: white;
-      padding: 80px 20px;
-      text-align: center;
-    }
-
-    .track-box {
-      background: white;
-      padding: 20px;
-      margin: 20px;
-      border-radius: 10px;
-      text-align: center;
-    }
-
-    input {
-      padding: 10px;
-      width: 70%;
-    }
-
-    button {
-      padding: 10px;
-      background: #ffcc00;
-      border: none;
-      cursor: pointer;
-    }
-
-    .services {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .service {
-      background: white;
-      margin: 10px;
-      padding: 20px;
-      width: 250px;
-      border-radius: 10px;
-    }
-
-    footer {
-      background: #222;
-      color: white;
-      padding: 20px;
-      text-align: center;
-    }
-  </style>
-</head>
-
-<body>
-
-<header>
-  <h1>🚚 EasyLog Express</h1>
-</header>
-
-<section class="hero">
-  <h2>Fast & Reliable International Shipping</h2>
-  <p>Delivering your packages worldwide</p>
-</section>
-
-<div class="track-box">
-  <h3>Track Your Shipment</h3>
-  <input type="text" id="trackingNumber" placeholder="Enter Tracking Number">
-  <button onclick="track()">Track</button>
-  <div id="result"></div>
-</div>
-
-<section class="services">
-  <div class="service">
-    <h3>Air Freight</h3>
-    <p>Fast global delivery</p>
-  </div>
-
-  <div class="service">
-    <h3>Ocean Freight</h3>
-    <p>Affordable bulk shipping</p>
-  </div>
-
-  <div class="service">
-    <h3>Courier Delivery</h3>
-    <p>Door-to-door service</p>
-  </div>
-</section>
-
-<footer>
-  <p>EasyLog Express - London, UK</p>
-</footer>
-
-<!DOCTYPE html>
 <html>
+<head>
+  <title>EasyLog Express</title>
+  <link rel="stylesheet" href="style.css">
+</head>
 <body>
 
-<h2>Update Shipment</h2>
+<h1>EasyLog Express</h1>
 
-<input id="tracking" placeholder="Tracking Number"><br><br>
-<input id="status" placeholder="Status"><br><br>
-<input id="location" placeholder="Location"><br><br>
+<h2>Create Shipment</h2>
 
-<button onclick="update()">Update</button>
+<input id="sender" placeholder="Sender Name">
+<input id="receiver" placeholder="Receiver Name">
+<button onclick="createShipment()">Create</button>
 
-<p id="msg"></p>
+<p id="result"></p>
 
-<script>
-async function update() {
-  const tracking = document.getElementById('tracking').value;
-  const status = document.getElementById('status').value;
-  const location = document.getElementById('location').value;
+<br>
 
-  const res = await fetch('/api/update', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ tracking, status, location })
-  });
+<h2>Track Shipment</h2>
+<input id="trackId" placeholder="Tracking ID">
+<button onclick="track()">Track</button>
 
-  const data = await res.json();
-
-  document.getElementById('msg').innerText =
-    data.success ? "Updated" : "Error";
-}
-</script>
-
-</body>
-</html>
+<script src="app.js"></script>
 
 </body>
 </html>
