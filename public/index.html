@@ -114,39 +114,43 @@
   <p>EasyLog Express - London, UK</p>
 </footer>
 
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2>Update Shipment</h2>
+
+<input id="tracking" placeholder="Tracking Number"><br><br>
+<input id="status" placeholder="Status"><br><br>
+<input id="location" placeholder="Location"><br><br>
+
+<button onclick="update()">Update</button>
+
+<p id="msg"></p>
+
 <script>
-async function track() {
-  const number = document.getElementById('trackingNumber').value;
+async function update() {
+  const tracking = document.getElementById('tracking').value;
+  const status = document.getElementById('status').value;
+  const location = document.getElementById('location').value;
 
-  const res = await fetch('/api/track/' + number);
-  const data = await res.json();
-
-  if (!data.success) {
-    document.getElementById('result').innerHTML = "Tracking number not found";
-    return;
-  }
-
-  let html = `
-    <h3>Tracking Details</h3>
-    <p><b>Status:</b> ${data.status}</p>
-    <p><b>From:</b> ${data.origin}</p>
-    <p><b>To:</b> ${data.destination}</p>
-    <h4>History</h4>
-  `;
-
-  data.history.reverse().forEach(item => {
-    html += `
-      <div style="background:#eee; padding:10px; margin:5px; border-radius:5px;">
-        <b>${item.status}</b><br>
-        ${item.location}<br>
-        <small>${item.date}</small>
-      </div>
-    `;
+  const res = await fetch('/api/update', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ tracking, status, location })
   });
 
-  document.getElementById('result').innerHTML = html;
+  const data = await res.json();
+
+  document.getElementById('msg').innerText =
+    data.success ? "Updated" : "Error";
 }
 </script>
+
+</body>
+</html>
 
 </body>
 </html>
