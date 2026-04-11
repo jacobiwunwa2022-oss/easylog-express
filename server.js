@@ -9,7 +9,93 @@ app.use(express.json());
 let shipments = {};
 
 // HOME PAGE
-app.get("/", (req, res) => {
+app.get( app.get("/", (req, res) => {
+  res.send(`
+  <style>
+    body { margin:0; font-family:Arial; background:#f5f5f5; }
+
+    header {
+      background:#ffcc00;
+      padding:15px;
+      font-size:22px;
+      font-weight:bold;
+    }
+
+    .hero {
+      background:url('https://images.unsplash.com/photo-1601584115197-04ecc0da31d7');
+      background-size:cover;
+      color:white;
+      padding:80px 20px;
+      text-align:center;
+    }
+
+    .box {
+      background:white;
+      padding:20px;
+      margin:20px auto;
+      width:90%;
+      max-width:400px;
+      border-radius:10px;
+      box-shadow:0 0 10px rgba(0,0,0,0.1);
+    }
+
+    input,button {
+      width:100%;
+      padding:12px;
+      margin:8px 0;
+    }
+
+    button {
+      background:#ffcc00;
+      border:none;
+      font-weight:bold;
+      cursor:pointer;
+    }
+  </style>
+
+  <header>EasyLog Express</header>
+
+  <div class="hero">
+    <h1>Fast & Secure Global Delivery</h1>
+    <p>Track your shipment in real time</p>
+  </div>
+
+  <div class="box">
+    <h3>Create Shipment</h3>
+    <input id="sender" placeholder="Sender">
+    <input id="receiver" placeholder="Receiver">
+    <button onclick="create()">Create Shipment</button>
+    <p id="result"></p>
+  </div>
+
+  <div class="box">
+    <h3>Track Shipment</h3>
+    <input id="trackId" placeholder="Tracking ID">
+    <button onclick="track()">Track Now</button>
+  </div>
+
+  <script>
+  function create() {
+    fetch('/create', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        sender: sender.value,
+        receiver: receiver.value
+      })
+    })
+    .then(res=>res.json())
+    .then(data=>{
+      result.innerHTML = "Tracking ID: " + data.id;
+    });
+  }
+
+  function track() {
+    window.location = "/track/" + trackId.value;
+  }
+  </script>
+  `);
+});) => {
   res.send(`
     <h1>EasyLog Express</h1>
 
