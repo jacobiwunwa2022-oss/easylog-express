@@ -1,58 +1,37 @@
-<div class="header">EasyLog Admin Dashboard</div>
+<!DOCTYPE html>
+<html>
+<body>
 
-<div class="container">
+<h2>Update Shipment</h2>
 
-  <div class="card">
-    <h3>Create Shipment</h3>
+<input id="tracking" placeholder="Tracking Number"><br><br>
+<input id="status" placeholder="Status"><br><br>
+<input id="location" placeholder="Location"><br><br>
 
-    <input id="sender" placeholder="Sender">
-    <input id="receiver" placeholder="Receiver">
-    <input id="origin" placeholder="Origin">
-    <input id="destination" placeholder="Destination">
+<button onclick="update()">Update</button>
 
-    <button onclick="create()">Generate Tracking</button>
-
-    <p id="result"></p>
-  </div>
-
-  <div class="card">
-    <h3>Update Shipment Status</h3>
-
-    <input id="t" placeholder="Tracking Number">
-    <input id="status" placeholder="Status (Delivered, Transit, etc)">
-
-    <button onclick="update()">Update</button>
-
-    <p id="out"></p>
-  </div>
-
-</div>
+<p id="msg"></p>
 
 <script>
-async function create() {
-  const res = await fetch("/api/create", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({
-      sender: sender.value,
-      receiver: receiver.value,
-      origin: origin.value,
-      destination: destination.value
-    })
-  });
-
-  const data = await res.json();
-  result.innerText = "Tracking: " + data.tracking;
-}
-
 async function update() {
-  const res = await fetch("/api/update/" + t.value, {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ status: status.value })
+  const tracking = document.getElementById('tracking').value;
+  const status = document.getElementById('status').value;
+  const location = document.getElementById('location').value;
+
+  const res = await fetch('/api/update', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ tracking, status, location })
   });
 
   const data = await res.json();
-  out.innerText = "Updated!";
+
+  document.getElementById('msg').innerText =
+    data.success ? "Updated" : "Error";
 }
 </script>
+
+</body>
+</html>
