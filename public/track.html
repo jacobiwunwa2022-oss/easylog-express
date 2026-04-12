@@ -21,7 +21,7 @@
 function track() {
   const id = document.getElementById("id").value;
 
-  fetch(`/shipment/${id}`)
+  fetch(`https://easylog-express.onrender.com/track/${id}`)
     .then(res => res.json())
     .then(data => {
       document.getElementById("output").innerHTML =
