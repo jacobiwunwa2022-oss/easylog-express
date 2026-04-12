@@ -7,13 +7,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ✅ YOUR SUPABASE (ALREADY SET)
+// SUPABASE
 const supabase = createClient(
   "https://zssdeapmesedzilrueoh.supabase.co",
   "sb_publishable_0vfHP85fYWtABokdLdMixw_whCKG0UR"
 );
 
-// GENERATE TRACKING ID
+// TRACKING ID
 function generateID() {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   let p1 = "", p2 = "";
@@ -26,31 +26,40 @@ function generateID() {
   return `ELX-${new Date().getFullYear()}-${p1}-${p2}`;
 }
 
-// 🏠 HOME
+// HOME (PRO UI)
 app.get("/", (req, res) => {
   res.send(`
   <style>
-    body{margin:0;font-family:Arial;background:#f4f4f4;}
+    body{margin:0;font-family:Arial;background:#f5f5f5;}
     header{background:#ffcc00;padding:15px;font-size:22px;font-weight:bold;}
-    .box{background:white;padding:20px;margin:20px auto;width:90%;max-width:400px;border-radius:10px;}
+    .hero{background:black;color:white;padding:60px;text-align:center;}
+    .container{max-width:500px;margin:auto;padding:20px;}
+    .box{background:white;padding:20px;margin-top:20px;border-radius:10px;}
     input,button{width:100%;padding:12px;margin:6px 0;}
     button{background:#ffcc00;border:none;font-weight:bold;}
   </style>
 
   <header>EasyLog Express</header>
 
-  <div class="box">
-    <h3>Create Shipment</h3>
-    <input id="sender" placeholder="Sender">
-    <input id="receiver" placeholder="Receiver">
-    <button onclick="create()">Create</button>
-    <p id="result"></p>
+  <div class="hero">
+    <h1>Global Logistics & Delivery</h1>
+    <p>Fast. Secure. Worldwide.</p>
   </div>
 
-  <div class="box">
-    <h3>Track</h3>
-    <input id="trackId" placeholder="Tracking ID">
-    <button onclick="track()">Track</button>
+  <div class="container">
+    <div class="box">
+      <h3>Create Shipment</h3>
+      <input id="sender" placeholder="Sender">
+      <input id="receiver" placeholder="Receiver">
+      <button onclick="create()">Create Shipment</button>
+      <p id="result"></p>
+    </div>
+
+    <div class="box">
+      <h3>Track Shipment</h3>
+      <input id="trackId" placeholder="Tracking ID">
+      <button onclick="track()">Track</button>
+    </div>
   </div>
 
   <script>
@@ -64,7 +73,7 @@ app.get("/", (req, res) => {
         })
       })
       .then(r=>r.json())
-      .then(d=>result.innerHTML="ID: "+d.id);
+      .then(d=>result.innerHTML="Tracking ID: "+d.id);
     }
 
     function track(){
@@ -82,15 +91,18 @@ app.post("/create", async (req, res) => {
     tracking_id: id,
     sender: req.body.sender,
     receiver: req.body.receiver,
-    status: "Processing",
+    status: "Shipment Created",
     lat: 6.5244,
-    lng: 3.3792
+    lng: 3.3792,
+    timeline: JSON.stringify([
+      { step: "Shipment Created", time: new Date().toLocaleString() }
+    ])
   }]);
 
   res.json({ id });
 });
 
-// TRACK
+// TRACK (PRO)
 app.get("/track/:id", async (req, res) => {
   const { data } = await supabase
     .from("shipments")
@@ -98,11 +110,21 @@ app.get("/track/:id", async (req, res) => {
     .eq("tracking_id", req.params.id)
     .single();
 
-  if (!data) return res.send("Not found");
+  if (!data) return res.send("Shipment not found");
+
+  const timeline = JSON.parse(data.timeline || "[]");
+
+  let timelineHTML = "";
+  timeline.forEach(t => {
+    timelineHTML += `<p>✔ ${t.step} - ${t.time}</p>`;
+  });
 
   res.send(`
     <h1>${data.tracking_id}</h1>
     <h2>Status: ${data.status}</h2>
+
+    <h3>Tracking Timeline</h3>
+    ${timelineHTML}
 
     <div id="map" style="height:300px;"></div>
 
@@ -123,12 +145,63 @@ app.get("/track/:id", async (req, res) => {
   `);
 });
 
-// ADMIN UPDATE
+// ADMIN DASHBOARD
+app.get("/admin", async (req, res) => {
+  const { data } = await supabase.from("shipments").select("*");
+
+  let rows = "";
+  data.forEach(s => {
+    rows += `
+      <tr>
+        <td>${s.tracking_id}</td>
+        <td>${s.status}</td>
+      </tr>
+    `;
+  });
+
+  res.send(`
+    <h1>Admin Dashboard</h1>
+
+    <table border="1" cellpadding="10">
+      <tr><th>ID</th><th>Status</th></tr>
+      ${rows}
+    </table>
+
+    <h3>Update Shipment</h3>
+    <input id="id" placeholder="Tracking ID">
+    <input id="status" placeholder="New Status">
+    <button onclick="update()">Update</button>
+
+    <script>
+      function update(){
+        fetch('/update/'+id.value,{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({status:status.value})
+        }).then(()=>alert("Updated"));
+      }
+    </script>
+  `);
+});
+
+// UPDATE
 app.post("/update/:id", async (req, res) => {
+  const { data } = await supabase
+    .from("shipments")
+    .select("*")
+    .eq("tracking_id", req.params.id)
+    .single();
+
+  let timeline = JSON.parse(data.timeline || "[]");
+
+  timeline.push({
+    step: req.body.status,
+    time: new Date().toLocaleString()
+  });
+
   await supabase.from("shipments").update({
     status: req.body.status,
-    lat: req.body.lat,
-    lng: req.body.lng
+    timeline: JSON.stringify(timeline)
   }).eq("tracking_id", req.params.id);
 
   res.send("Updated");
