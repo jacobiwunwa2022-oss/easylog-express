@@ -1,39 +1,196 @@
-<h1>Admin Panel</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EasyLog Admin Dashboard</title>
 
-<input id="username" placeholder="Username">
-<input id="password" placeholder="Password">
-<button onclick="login()">Login</button>
+  <style>
+    body {
+      font-family: Arial;
+      margin: 0;
+      background: #f4f6f8;
+    }
 
-<div id="adminArea" style="display:none;">
-  <h2>Update Shipment</h2>
-  <input id="id" placeholder="Tracking ID">
-  <input id="status" placeholder="New Status">
-  <button onclick="update()">Update</button>
+    header {
+      background: #0b2a4a;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .container {
+      padding: 20px;
+      max-width: 900px;
+      margin: auto;
+    }
+
+    .card {
+      background: white;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background: #0b2a4a;
+      color: white;
+      cursor: pointer;
+      border: none;
+    }
+
+    button:hover {
+      background: #133b66;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>EasyLog Express Admin Panel</header>
+
+<div class="container">
+
+  <!-- LOGIN -->
+  <div class="card" id="loginBox">
+    <h3>Admin Login</h3>
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <p id="loginMsg"></p>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboard" class="hidden">
+
+    <!-- CREATE SHIPMENT -->
+    <div class="card">
+      <h3>Create Shipment</h3>
+      <input type="text" id="receiver" placeholder="Receiver Name">
+      <input type="text" id="destination" placeholder="Destination">
+      <button onclick="createShipment()">Generate Tracking Number</button>
+      <p id="trackingResult"></p>
+    </div>
+
+    <!-- UPDATE STATUS -->
+    <div class="card">
+      <h3>Update Shipment Status</h3>
+      <input type="text" id="trackId" placeholder="Tracking ID">
+      <select id="status">
+        <option>In Transit</option>
+        <option>Out for Delivery</option>
+        <option>Delivered</option>
+        <option>Pending</option>
+      </select>
+      <button onclick="updateStatus()">Update Status</button>
+    </div>
+
+    <!-- SHIPMENT LIST -->
+    <div class="card">
+      <h3>All Shipments</h3>
+      <button onclick="loadShipments()">Refresh List</button>
+      <table>
+        <thead>
+          <tr>
+            <th>Tracking ID</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="shipmentTable"></tbody>
+      </table>
+    </div>
+
+  </div>
+
 </div>
 
 <script>
-function login() {
-  fetch("/admin/login", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({
-      username: username.value,
-      password: password.value
-    })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      adminArea.style.display = "block";
-    }
-  });
-}
+  let API_URL = "https://your-backend.onrender.com"; // CHANGE THIS
 
-function update() {
-  fetch(`/admin/update/${id.value}`, {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({ status: status.value })
-  });
-}
+  function login() {
+    const u = document.getElementById("username").value;
+    const p = document.getElementById("password").value;
+
+    if (u === "admin" && p === "admin123") {
+      document.getElementById("loginBox").classList.add("hidden");
+      document.getElementById("dashboard").classList.remove("hidden");
+    } else {
+      document.getElementById("loginMsg").innerText = "Wrong login details";
+    }
+  }
+
+  async function createShipment() {
+    const receiver = document.getElementById("receiver").value;
+    const destination = document.getElementById("destination").value;
+
+    const res = await fetch(API_URL + "/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ receiver, destination })
+    });
+
+    const data = await res.json();
+    document.getElementById("trackingResult").innerText =
+      "Tracking Number: " + data.trackingNumber;
+  }
+
+  async function updateStatus() {
+    const id = document.getElementById("trackId").value;
+    const status = document.getElementById("status").value;
+
+    await fetch(API_URL + "/update", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, status })
+    });
+
+    alert("Status Updated!");
+  }
+
+  async function loadShipments() {
+    const res = await fetch(API_URL + "/shipments");
+    const data = await res.json();
+
+    const table = document.getElementById("shipmentTable");
+    table.innerHTML = "";
+
+    Object.keys(data).forEach(id => {
+      table.innerHTML += `
+        <tr>
+          <td>${id}</td>
+          <td>${data[id].status}</td>
+        </tr>
+      `;
+    });
+  }
 </script>
+
+</body>
+</html>
